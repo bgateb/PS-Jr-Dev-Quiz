@@ -124,7 +124,13 @@
 
     @media (min-width: 900px) {
       .layout {
-        grid-template-columns: 5fr 6fr;
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (min-width: 1100px) {
+      .layout {
+        grid-template-columns: 6fr 5fr;
       }
     }
 
@@ -171,8 +177,11 @@
     }
 
     .reference-card pre {
-      max-height: 500px;
+      max-height: 420px;
       overflow-y: auto;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #3d4f6e var(--code-bg);
     }
 
     .hljs {
@@ -191,8 +200,29 @@
       border-radius: var(--radius-md);
       overflow-x: auto;
       white-space: pre;
-      font-size: 0.85rem;
-      line-height: 1.55;
+      font-size: 0.775rem;
+      line-height: 1.6;
+      scrollbar-width: thin;
+      scrollbar-color: #3d4f6e var(--code-bg);
+    }
+
+    pre::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+
+    pre::-webkit-scrollbar-track {
+      background: var(--code-bg);
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+
+    pre::-webkit-scrollbar-thumb {
+      background: #3d4f6e;
+      border-radius: 999px;
+    }
+
+    pre::-webkit-scrollbar-thumb:hover {
+      background: #5a6f8f;
     }
 
     code {
