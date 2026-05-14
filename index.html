@@ -536,6 +536,16 @@
       white-space: pre-line;
     }
 
+    :not(pre) > code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.875em;
+      padding: 0.12em 0.38em;
+      border-radius: 4px;
+      background: rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      color: var(--text);
+    }
+
     .explanation-label {
       display: block;
       font-size: 0.72rem;
@@ -917,7 +927,7 @@ End-For;`
 
     function renderFeedback(statusLabel, explanation, className) {
       feedback.className = `feedback ${className}`;
-      feedback.innerHTML = `${escapeHtml(statusLabel)}<div class="explanation"><span class="explanation-label">Explanation</span>${escapeHtml(explanation)}</div>`;
+      feedback.innerHTML = `${escapeHtml(statusLabel)}<div class="explanation"><span class="explanation-label">Explanation</span>${formatExplanation(explanation)}</div>`;
     }
 
     function normalizeText(value) {
@@ -936,8 +946,8 @@ End-For;`
       progressText.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
       scoreText.textContent = `Auto-graded score: ${score}`;
       progressFill.style.width = `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`;
-      questionText.textContent = currentQuestion.question;
-      questionInstructions.textContent = currentQuestion.instructions || "";
+      questionText.innerHTML = formatExplanation(currentQuestion.question);
+      questionInstructions.innerHTML = formatExplanation(currentQuestion.instructions || "");
       feedback.textContent = "";
       feedback.className = "feedback";
       answersContainer.innerHTML = "";
@@ -986,6 +996,10 @@ End-For;`
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+    }
+
+    function formatExplanation(value) {
+      return escapeHtml(value).replace(/`([^`]+)`/g, "<code>$1</code>");
     }
 
     function selectAnswer(index) {
@@ -1114,11 +1128,11 @@ End-For;`
         const reviewItem = document.createElement("div");
         reviewItem.className = `review-item ${item.isCorrect ? "correct" : "incorrect"}`;
         reviewItem.innerHTML = `
-          <strong>${index + 1}. ${escapeHtml(item.question)}</strong>
+          <strong>${index + 1}. ${formatExplanation(item.question)}</strong>
           <p><strong>Response:</strong> ${escapeHtml(item.selectedAnswer)}</p>
           <p><strong>Expected:</strong> ${escapeHtml(item.correctAnswer)}</p>
           <p><strong>Status:</strong> ${item.isCorrect ? "Accepted" : "Needs review"}</p>
-          <div class="explanation"><span class="explanation-label">Explanation</span>${escapeHtml(item.explanation)}</div>
+          <div class="explanation"><span class="explanation-label">Explanation</span>${formatExplanation(item.explanation)}</div>
         `;
         reviewList.appendChild(reviewItem);
       });
@@ -1219,15 +1233,21 @@ End-For;`
       document.getElementById("reference-toggle-label").textContent = isCollapsed ? "Show" : "Hide";
     });
 
-    fetch('questions.json')
-      .then(r => r.json())
+    const quizParam = new URLSearchParams(window.location.search).get('quiz') || 'pc-buffertraversal';
+    const quizFile = `${quizParam.replace(/[^a-zA-Z0-9_-]/g, '')}.json`;
+
+    fetch(quizFile)
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then(questions => {
         quizQuestions = questions;
         questionsReady = true;
         updateStartButtonState();
       })
       .catch(() => {
-        startCard.innerHTML = '<p style="color:var(--danger);padding:1rem">Failed to load questions. Please reload the page.</p>';
+        startCard.innerHTML = `<p style="color:var(--danger);padding:1rem">Failed to load <code>${escapeHtml(quizFile)}</code>. Check the <code>?quiz=</code> URL parameter and reload.</p>`;
       });
   </script>
 </body>
