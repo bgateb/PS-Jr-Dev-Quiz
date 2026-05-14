@@ -48,9 +48,11 @@
       "level 0 has exactly one row",
       "only one row at level 0",
       "the level 0 rowset always contains a single row",
-      "there is only ever one row at level 0"
+      "there is only ever one row at level 0",
+      "default method",
+      "get the first row"
     ],
-    "keywords": ["one row"],
+    "keywords": ["one row", "shorthand", "shortcut", "default method"],
     "explanation": "Level 0 always contains exactly one row — the component header row. \n\n So &rs0(1) is the only valid index, and it gives you the single row from which you can call GetRowset() to reach Level 1. &rs0(1) is shorthand and functionally equivalent to GetLevel0().GetRow(1) because the default method of the Rowset class is GetRow, PeopleCode lets you omit the explicit method name. \n\n Rowsets are 1-based (not 0-based like most arrays), so &rs0(1) means \"get the first row.\" \n\n Assigning GetLevel0() to a variable like &rs0 is also good practice — it creates a reusable reference to the Level 0 rowset for anywhere you need to traverse the component buffer."
   },
   {
@@ -115,9 +117,11 @@
       "would only get contacts for the first level 1 row",
       "only sees contacts for one effdt row",
       "misses level 2 rows for other level 1 rows",
-      "only retrieves contacts belonging to the first level 1 row"
+      "only retrieves contacts belonging to the first level 1 row",
+      "each level 1 has a level 2 child rowset",
+      "parent-child relationship"
     ],
-    "keywords": ["first", "only"],
+    "keywords": ["first", "only", "child", "parent-child", "relationship", "loop"],
     "explanation": "If &rs2 were retrieved once before the loop, it would be fixed to the Level 2 rowset of one specific Level 1 row (likely the first). All iterations of the loop would validate the same contact data, missing contacts on other Level 1 rows entirely. \n\n Doing this incorrectly assumes there is only one Level 2 rowset for the whole component. Since each EFFDT'ed Level 1 row has its own child Level 2 rowset (even when no L2 data may exist in the database yet), a single pre-loop retrieval would either point to only one parent row's contacts or fail to validate the correct child rows for each Level 1 EFFDT'ed parent."
   },
   {
