@@ -122,34 +122,12 @@
       align-items: start;
     }
 
-    @media (min-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (min-width: 1100px) {
-      .layout {
-        grid-template-columns: 6fr 5fr;
-      }
-    }
-
     .card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
       padding: 1.75rem;
       box-shadow: var(--shadow-md);
-    }
-
-    /* make the reference card sticky on desktop so it stays in view while scrolling the quiz */
-    @media (min-width: 900px) {
-      .reference-card {
-        position: sticky;
-        top: 70px;
-        max-height: calc(100vh - 90px);
-        overflow-y: auto;
-      }
     }
 
     .reference-card h2 {
