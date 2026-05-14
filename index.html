@@ -276,7 +276,29 @@
     }
 
     .quiz-body {
+      position: relative;
+      overflow: hidden;
       padding: 1.5rem 1.75rem 1.75rem;
+    }
+
+    .q-watermark {
+      position: absolute;
+      top: -0.15em;
+      right: -0.05em;
+      font-size: 9rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: rgba(21, 24, 46, 0.055);
+      user-select: none;
+      pointer-events: none;
+      font-variant-numeric: tabular-nums;
+      z-index: 0;
+    }
+
+    .quiz-body > *:not(.q-watermark) {
+      position: relative;
+      z-index: 1;
     }
 
     .progress-bar {
@@ -678,6 +700,25 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    @keyframes slideOutLeft {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(-22px); }
+    }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(22px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .quiz-body.is-exiting {
+      animation: slideOutLeft 170ms ease forwards;
+      pointer-events: none;
+    }
+
+    .quiz-body.is-entering {
+      animation: slideInRight 210ms ease forwards;
+    }
+
     #start-card,
     #quiz-layout > .card,
     #result-card {
@@ -791,6 +832,7 @@
         </div>
 
         <div class="quiz-body">
+          <div class="q-watermark" id="q-watermark" aria-hidden="true"></div>
           <h2 class="question-title" id="question-text"></h2>
           <p class="question-instructions" id="question-instructions"></p>
           <div class="answers" id="answers"></div>
@@ -943,7 +985,10 @@ End-For;`
       selectedAnswerIndex = null;
       submitted = false;
 
-      progressText.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+      const qNum = currentQuestionIndex + 1;
+      progressText.textContent = `Question ${qNum} of ${quizQuestions.length}`;
+      const watermark = document.getElementById("q-watermark");
+      if (watermark) watermark.textContent = qNum < 10 ? `0${qNum}` : `${qNum}`;
       scoreText.textContent = `Auto-graded score: ${score}`;
       progressFill.style.width = `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`;
       questionText.innerHTML = formatExplanation(currentQuestion.question);
@@ -1104,13 +1149,24 @@ End-For;`
 
     function goToNextQuestion() {
       shortAnswer.disabled = false;
+      const quizBody = document.querySelector('.quiz-body');
 
-      if (currentQuestionIndex < quizQuestions.length - 1) {
-        currentQuestionIndex += 1;
-        renderQuestion();
-      } else {
-        renderResults();
-      }
+      quizBody.classList.add('is-exiting');
+
+      setTimeout(function () {
+        quizBody.classList.remove('is-exiting');
+
+        if (currentQuestionIndex < quizQuestions.length - 1) {
+          currentQuestionIndex += 1;
+          renderQuestion();
+          quizBody.classList.add('is-entering');
+          setTimeout(function () {
+            quizBody.classList.remove('is-entering');
+          }, 220);
+        } else {
+          renderResults();
+        }
+      }, 170);
     }
 
     function renderResults() {
@@ -1210,6 +1266,11 @@ End-For;`
       quizLayout.classList.remove("hidden");
       renderReferences();
       renderQuestion();
+      const quizBody = document.querySelector(".quiz-body");
+      if (quizBody) {
+        quizBody.classList.add("is-entering");
+        setTimeout(function () { quizBody.classList.remove("is-entering"); }, 220);
+      }
     }
 
     submitButton.addEventListener("click", submitAnswer);
