@@ -56,7 +56,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
+      grid-template-columns: 1fr;
       gap: 1rem;
       align-items: start;
     }
@@ -67,11 +67,6 @@
       border-radius: 14px;
       padding: 1.5rem;
       box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-    }
-
-    .reference-card {
-      position: sticky;
-      top: 1rem;
     }
 
     .reference-card h2 {
@@ -268,15 +263,6 @@
       display: none;
     }
 
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .reference-card {
-        position: static;
-      }
-    }
   </style>
 </head>
 <body>
@@ -287,6 +273,12 @@
 
   <main>
     <div class="layout">
+      <aside class="card reference-card hidden">
+        <h2>Reference</h2>
+        <p class="reference-note" id="reference-note">Code snippets shown here stay visible while you answer the related question.</p>
+        <div id="reference-content"></div>
+      </aside>
+
       <section id="quiz-card" class="card">
         <div class="toolbar">
           <div class="status" id="progress-text">Question 1 of 1</div>
@@ -306,12 +298,6 @@
           <button class="secondary" id="next-btn" disabled>Next Question</button>
         </div>
       </section>
-
-      <aside class="card reference-card">
-        <h2>Reference</h2>
-        <p class="reference-note" id="reference-note">Code snippets shown here stay visible while you answer the related question.</p>
-        <div id="reference-content"></div>
-      </aside>
     </div>
 
     <section id="result-card" class="card result hidden">
@@ -499,12 +485,15 @@ DERIVED_WRK.NAME.Value = &name;`
     }
 
     function renderReferences(referenceIds) {
+      const referenceCard = document.querySelector(".reference-card");
       referenceContent.innerHTML = "";
 
       if (referenceIds.length === 0) {
-        referenceContent.innerHTML = `<p class="reference-note">No reference snippet is needed for this question.</p>`;
+        referenceCard.classList.add("hidden");
         return;
       }
+
+      referenceCard.classList.remove("hidden");
 
       referenceIds.forEach((id) => {
         const snippet = referenceSnippets[id];
@@ -675,7 +664,7 @@ DERIVED_WRK.NAME.Value = &name;`
       score = 0;
       submitted = false;
       review.length = 0;
-      shortAnswer.disabled = false;
+      shortAnswer.disabled = fals
       resultCard.classList.add("hidden");
       document.querySelector(".reference-card").classList.remove("hidden");
       quizCard.classList.remove("hidden");
