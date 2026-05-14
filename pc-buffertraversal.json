@@ -89,10 +89,12 @@
       "buffer is a hierarchy",
       "must traverse each level in order",
       "level 2 belongs to a specific level 1 parent",
-      "level 2 data belongs to an effdt parent row"
+      "level 2 data belongs to an effdt parent row",
+      "belongs to a specific level 1 row ",
+      "buffer is hierarchical"
     ],
-    "keywords": ["level 1", "traverse"],
-    "explanation": "Level 2 is a child of Level 1, not Level 0. The component buffer is a hierarchy — you must traverse each level in order. \n\n You get Level 1 from Level 0, then Level 2 from a Level 1 row. Level 2 rowset data belongs to a specific Level 1 (in our case, EFFDT'ed) parent row. \n\n The full path is: get the Level 0 row → get the Level 1 rowset → get a specific Level 1 row → only then retrieve its Level 2 child rowset to access rows, records, and fields within it."
+    "keywords": ["level 1", "traverse", "relationship", "parent", "child"],
+    "explanation": "Level 2 is a child of Level 1, not of Level 0. The component buffer is a hierarchy — you must traverse each level in order. \n\n You get Level 1 from Level 0, then Level 2 from a Level 1 row. Level 2 rowset data belongs to a specific Level 1 (in our case, EFFDT'ed) parent row. \n\n The full buffer traversal path is: get the Level 0 row → get the Level 1 rowset → get a specific Level 1 row → only then can we retrieve its Level 2 child rowset to access rows, records, and fields within it."
   },
   {
     "type": "shortAnswer",
@@ -142,10 +144,12 @@
       "would validate the same data on every iteration",
       "rs2 would point to only one parent row",
       "fails to validate child rows for each parent",
-      "stuck pointing at one parent row's contacts"
+      "stuck pointing at one parent row's contacts",
+      "level 1 owns level 2",
+      "parent child relationship"
     ],
     "keywords": ["first", "only", "child", "parent", "loop"],
-    "explanation": "If `&rs2` were retrieved once before the loop, it would be fixed to the Level 2 rowset of one specific Level 1 row (likely the first). All iterations of the L1 loop would then validate the same L2 contact data on every iteration, missing contact info detail on other Level 1 rows entirely. \n\n Doing this incorrectly assumes there is only one Level 2 rowset for the whole component. Since each EFFDT'ed Level 1 row has its own child Level 2 rowset (even when no L2 data may exist in the database yet), so a single pre-loop retrieval would either point to only one parent row's contacts or fail to validate the correct child rows for each Level 1 EFFDT'ed parent."
+    "explanation": "If `&rs2` were retrieved once before the loop, it would be fixed to the Level 2 rowset of one specific Level 1 row (likely the first). All iterations of the L1 loop would then validate the same L2 contact data on every iteration, missing contact info detail on other Level 1 rows entirely. \n\n Retreiving and storing `&rs2` outside of the L1 loop incorrectly assumes there is only one Level 2 rowset for the whole component. Since each EFFDT'ed Level 1 row has its own child Level 2 rowset (even when no L2 data may exist in the database yet), so a single pre-loop retrieval would either point to only one parent row's contacts or fail to validate the correct child rows for each Level 1 EFFDT'ed parent."
   },
   {
     "type": "shortAnswer",
@@ -212,9 +216,10 @@
       "validates the in-memory buffer state",
       "checks the buffer before any sql is written",
       "buffer validation covers unsaved changes",
-      "error can stop the save entirely"
+      "error can stop the save entirely",
+      "before the component saves"
     ],
-    "keywords": ["before", "save", "buffer", "db", "database"],
+    "keywords": ["before", "save", "buffer", "db", "database", "component", "SavePreChange"],
     "explanation": "The `SavePreChange` event fires after the user clicks \"Save\" but before any SQL is written to the database. \n\n Validating in the buffer means we're checking the component's in-memory state — it's faster and prevents a round-trip to the database, however ther is a chance that the database could still be modified directly by other means (batch processing, SQL, etc) that bypass this event. \n\n At this point in component save processing, the buffer is still available for cross-row validation or manipulation and raising an `Error()` can stop the save entirely, making it the right event for a final sweep across multiple rows or scroll levels. \n\n Buffer validation covers unsaved changes that haven't yet hit the database; database validation covers only what's already been persisted — so save processing should usually validate the buffer, since that is the data that is about to be committed to the db."
   },
   {
