@@ -1,36 +1,28 @@
 [
   {
-    "type": "shortAnswer",
-    "question": "What does `GetLevel0()` return?",
-    "instructions": "Answer briefly. This question is auto-graded by keyword matching.",
-    "acceptedAnswers": [
-      "level 0 rowset",
-      "the level 0 rowset",
-      "rowset for level 0",
-      "component buffer level 0",
-      "rowset representing level 0",
-      "rowset object at level 0",
-      "top of the component buffer",
-      "starting point for traversing the buffer",
-      "rowset with one row at the top of the buffer"
+    "type": "multipleChoice",
+    "question": "In PeopleCode, what does `GetLevel0()` return?",
+    "instructions": "Select the best answer.",
+    "answers": [
+      "A row object representing the single Level 0 header row of the component buffer",
+      "A record object containing the key fields for the current component transaction",
+      "An array of all rowsets in the component buffer, starting with Level 0, index 0",
+      "A rowset object representing the Level 0 scroll — the top of the component buffer, which should always contain one row"
     ],
-    "keywords": ["rowset", "rowset object", "level 0"],
+    "correctIndex": 0,
     "explanation": "`GetLevel0()` returns a rowset object. Specifically for the Level 0 rowset — the top of the component buffer, which always contains exactly one row. \n\n It is the starting point for reaching any of the child scroll levels. Level 0 usually contains one (and only one) active row for the current transaction."
   },
   {
-    "type": "shortAnswer",
+    "type": "multipleChoice",
     "question": "What is the difference between a rowset and a row?",
-    "instructions": "Answer in one or two sentences. This question is auto-graded by simple keyword matching.",
-    "acceptedAnswers": [
-      "rowset is a collection of rows",
-      "rowset contains rows",
-      "a rowset holds multiple rows",
-      "a row is a single record in a rowset",
-      "rowset is a container of rows",
-      "a row can contain records and child rowsets",
-      "rowset is the container and row is one entry"
+    "instructions": "Select the best answer.",
+    "answers": [
+      "A rowset and a row are interchangeable terms in PeopleCode — both refer to one record in the component buffer",
+      "A rowset is a single record from the database; a row is the collection of all such records currently loaded in the buffer",
+      "A rowset is a collection of rows; a row is a single entry within a rowset",
+      "A rowset is a single field's value across all scroll levels; a row is the set of fields at one scroll level"
     ],
-    "keywords": ["rowset", "row"],
+    "correctIndex": 0,
     "explanation": "A rowset is a collection (container) of rows. \n\n A row is a single record within a rowset, and it can contain records and child rowsets. For example, `&rs2` is the entire Level 2 contact info rowset, while `&rs2(&j)` is one single contact row within that rowset."
   },
   {
@@ -71,21 +63,16 @@
     "explanation": "Level 0 always contains exactly one row — the component header row. So `&rs0(1)` is the only valid index, and it gives you the single row from which you can call `GetRowset()` to reach Level 1. \n\n `&rs0(1)` is shorthand and functionally equivalent to `GetLevel0().GetRow(1)` because the default method of the Rowset class is `GetRow`, PeopleCode lets you omit the explicit method name. \n\n Rowsets are 1-based (not 0-based like most arrays), so &rs0(1) means \"get the first row.\" \n\n Assigning `GetLevel0()` to a variable like `&rs0` is also good practice — it creates a reusable reference to the Level 0 rowset for anywhere you need to traverse the component buffer."
   },
   {
-    "type": "shortAnswer",
+    "type": "multipleChoice",
     "question": "What does the `ActiveRowCount` property tell us?",
-    "instructions": "Answer briefly. This question is auto-graded by keyword matching.",
-    "acceptedAnswers": [
-      "number of active rows in the rowset",
-      "how many active rows exist",
-      "count of active rows",
-      "the number of non-deleted rows in the rowset",
-      "how many active rows are currently loaded",
-      "non-deleted rows currently in the rowset",
-      "safe upper limit for a for loop",
-      "excludes rows marked for deletion",
-      "loop bound for active rows"
+    "instructions": "Select the best answer.",
+    "answers": [
+      "The number of rows that currently exist in the underlying database table for this rowset",
+      "The number of active (non-deleted) rows currently in the rowset — the safe upper bound for a `For` loop over the buffer",
+      "The total number of rows in the rowset, including any rows that have been marked for deletion in the current session",
+      "The number of rows that have been modified (changed, added, or deleted) since the component was loaded"
     ],
-    "keywords": ["active", "rows", "buffer"],
+    "correctIndex": 0,
     "explanation": "`ActiveRowCount` returns the number of active (non-deleted) rows currently in the rowset — it is the safe upper limit to use as the bound in a `For` loop and reflects what is currently loaded in the component buffer. (i.e. rows marked for deletion are excluded from the count.)"
   },
   {
