@@ -42,7 +42,7 @@
   },
   {
     "type": "shortAnswer",
-    "question": "When declaring a variable for a level 0 rowset such as Local Rowset &rs0 = GetLevel0(); — why would we use the syntax &rs0(1) to begin traversing the buffer?",
+    "question": "When declaring a variable for a level 0 rowset such as `Local Rowset &rs0 = GetLevel0();` — why would we use the syntax `&rs0(1)` to begin traversing the buffer?",
     "instructions": "Answer briefly. This question is auto-graded by keyword matching.",
     "acceptedAnswers": [
       "level 0 always has one row",
@@ -58,16 +58,17 @@
   },
   {
     "type": "shortAnswer",
-    "question": "What does the ActiveRowCount property tell us?",
+    "question": "What does the `ActiveRowCount` property tell us?",
     "instructions": "Answer briefly. This question is auto-graded by keyword matching.",
     "acceptedAnswers": [
       "number of active rows in the rowset",
       "how many active rows exist",
       "count of active rows",
-      "the number of non-deleted rows in the rowset"
+      "the number of non-deleted rows in the rowset",
+      "how many active rows are currently loaded"
     ],
-    "keywords": ["active", "rows"],
-    "explanation": "`ActiveRowCount` returns the number of active (non-deleted) rows currently in the rowset — the safe upper limit to use as the bound in a `For` loop. It reflects what is currently loaded in the component buffer, so rows marked for deletion are excluded from the count."
+    "keywords": ["active", "rows", "buffer"],
+    "explanation": "`ActiveRowCount` returns the number of active (non-deleted) rows currently in the rowset — it is the safe upper limit to use as the bound in a `For` loop and reflects what is currently loaded in the component buffer. (i.e. rows marked for deletion are excluded from the count.)"
   },
   {
     "type": "shortAnswer",
@@ -123,7 +124,7 @@
       "each level 1 has a level 2 child rowset",
       "parent-child relationship"
     ],
-    "keywords": ["first", "only", "child", "parent-child", "relationship", "loop"],
+    "keywords": ["first", "only", "child", "parent", "loop"],
     "explanation": "If `&rs2` were retrieved once before the loop, it would be fixed to the Level 2 rowset of one specific Level 1 row (likely the first). All iterations of the L1 loop would then validate the same L2 contact data on every iteration, missing contact info detail on other Level 1 rows entirely. \n\n Doing this incorrectly assumes there is only one Level 2 rowset for the whole component. Since each EFFDT'ed Level 1 row has its own child Level 2 rowset (even when no L2 data may exist in the database yet), so a single pre-loop retrieval would either point to only one parent row's contacts or fail to validate the correct child rows for each Level 1 EFFDT'ed parent."
   },
   {
@@ -147,7 +148,8 @@
       "getrowset is called on the parent row",
       "level 2 is retrieved from the parent row object",
       "calling getrowset on a specific level 1 row returns its children",
-      "the row object knows its own child rowset"
+      "the row object knows its own child rowset",
+      "key structure"
     ],
     "keywords": ["parent", "row"],
     "explanation": "`GetRowset()` is called on a specific Level 1 row object `&rs1(&i). \n\n The row object inherently knows its own child rowsets — so the result is always such that the Level 2 rows are children of that particular Level 1 row. \n\n The component buffer organizes child scroll data under each parent row based on the page/component structure and the record's parent-child key relationships. \n\n This means `&rs1(&i).GetRowset(...)` always returns the contacts info detail for that specific effective-dated parent row, not contacts info detail from any other Level 1 row."
@@ -163,7 +165,7 @@
       "each level 1 row gets its own fresh count"
     ],
     "keywords": ["reset", "each", "init", "initialize"],
-    "explanation": "`&`primaryCount` is reset to 0 at the start of each Level 1 iteration so the count is specific to that row's contacts. \n\n The validation runs after the Level 2 loop because we need to finish counting all contacts for that row before we can determine if there is more than one primary. Initializing inside the loop prevents the count from bleeding into subsequent iterations — if initialized outside the L1 loop, contacts from one header row would corrupt the primary count for the next. \n\n Placing the `&primaryCount > 1` check outside the inner loop ensures the full set of Level 2 contact rows for the current parent has been inspected before any error is thrown."
+    "explanation": "`&primaryCount` is reset to 0 at the start of each Level 1 iteration so the count is specific to that row's contacts. \n\n The validation runs after the Level 2 loop because we need to finish counting all contacts for that row before we can determine if there is more than one primary. Initializing inside the loop prevents the count from bleeding into subsequent iterations — if initialized outside the L1 loop, contacts from one header row would corrupt the primary count for the next. \n\n Placing the `&primaryCount > 1` check outside the inner loop ensures the full set of Level 2 contact rows for the current parent has been inspected before any error is thrown."
   },
   {
     "type": "shortAnswer",
