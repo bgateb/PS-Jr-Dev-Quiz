@@ -864,74 +864,7 @@
   </main>
 
   <script>
-    const referenceSnippets = {
-      contactValidation: {
-        title: "SIMPLE DATA VALIDATION — Component.SavePreChange",
-        language: "PeopleCode",
-        code: `Local Rowset &rs0, &rs1, &rs2;
-Local Row &row2;
-Local number &i, &j, &primaryCount;
-Local string &contactType, &contactVal;
-
-&rs0 = GetLevel0();
-&rs1 = &rs0(1).GetRowset(Scroll.CSU_JD_BG_HDR);
-
-For &i = 1 To &rs1.ActiveRowCount
-
-   &rs2 = &rs1(&i).GetRowset(Scroll.CSU_JD_BG_CNTCT);
-   &primaryCount = 0;
-
-   For &j = 1 To &rs2.ActiveRowCount
-
-      &row2 = &rs2(&j);
-
-      &contactType = &row2.CSU_JD_BG_CNTCT.CSU_JD_CNTCT_TYPE.Value;
-      &contactVal = LTrim(RTrim(&row2.CSU_JD_BG_CNTCT.CSU_JD_CONTACT_VAL.Value));
-
-      If &row2.CSU_JD_BG_CNTCT.CSU_JD_PRIMARY.Value = "Y" Then
-         &primaryCount = &primaryCount + 1;
-            If &primaryCount > 1 Then
-        Error ("Only one primary contact is allowed for each header row.");
-      End-If;
-      End-If;
-
-      If All(&contactType) And None(&contactVal) Then
-         Error ("Contact Value is required when Contact Type is entered.");
-      End-If;
-
-      If All(&contactVal) And None(&contactType) Then
-         Error ("Contact Type is required when Contact Value is entered.");
-      End-If;
-
-      If All(&contactVal) Then Evaluate &contactType
-         When = "E" /* Email */
-            If Find("@", &contactVal) = 0 Then
-               Error ("Enter a valid email address.");
-            End-If;
-
-         When = "P" /* Phone */
-            If Not IsNumber(&contactVal) Then
-               Error ("Phone number must be numeric.");
-            End-If;
-
-         When = "F" /* Fax */
-            If Not IsNumber(&contactVal) Then
-               Error ("Fax number must be numeric.");
-            End-If;
-
-         When = "X" /* X / Twitter */
-            If Find("@", &contactVal) = 0 Then
-               Error ("Enter a valid X handle.");
-            End-If;
-         When-Other
-            Warning ("Unknown contact type: " | &contactType);
-         End-Evaluate;
-      End-If;
-   End-For;
-End-For;`
-      }
-    };
-
+    let quizMeta = null;
     let quizQuestions = [];
     let questionsReady = false;
     let studentName = "";
@@ -1023,15 +956,32 @@ End-For;`
       });
     }
 
+    function applyMeta(meta) {
+      document.title = meta.title || document.title;
+      document.querySelector("header h1").textContent      = meta.title       || "";
+      document.querySelector("header p").textContent       = meta.subtitle    || "";
+      document.querySelector("#start-card h2").textContent = meta.startHeading || "";
+      document.querySelector("#start-card > p").textContent = meta.startBody  || "";
+      document.querySelector(".submit-note").textContent   = meta.submitNote  || "";
+      const refNote = document.getElementById("reference-note");
+      if (refNote && meta.reference) refNote.textContent = meta.reference.note || "";
+    }
+
     function renderReferences() {
-      const snippet = referenceSnippets.contactValidation;
-      referenceContent.innerHTML = `
-        <img src="img/component-screenshot.png" alt="CSU Training Contact Info component showing Level 0, Level 1 Scroll, and Level 2 Scroll" />
-        <h3>${snippet.title}</h3>
-        <p class="reference-note">${snippet.language}</p>
-        <pre><code class="language-java">${escapeHtml(snippet.code)}</code></pre>
-      `;
-      hljs.highlightElement(referenceContent.querySelector('code'));
+      const ref = (quizMeta && quizMeta.reference) || {};
+      let html = "";
+      if (ref.image) {
+        html += `<img src="${escapeHtml(ref.image)}" alt="${escapeHtml(ref.imageAlt || "")}" />`;
+      }
+      (ref.snippets || []).forEach(function (snippet) {
+        html += `<h3>${escapeHtml(snippet.title || "")}</h3>
+        <p class="reference-note">${escapeHtml(snippet.language || "")}</p>
+        <pre><code class="language-java">${escapeHtml(snippet.code || "")}</code></pre>`;
+      });
+      referenceContent.innerHTML = html;
+      referenceContent.querySelectorAll("code").forEach(function (el) {
+        hljs.highlightElement(el);
+      });
     }
 
     function escapeHtml(value) {
@@ -1302,8 +1252,16 @@ End-For;`
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
-      .then(questions => {
-        quizQuestions = questions;
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Legacy format — bare array of questions
+          quizQuestions = data;
+        } else {
+          // Current format — { meta, questions }
+          quizMeta = data.meta || null;
+          quizQuestions = data.questions || [];
+          if (quizMeta) applyMeta(quizMeta);
+        }
         questionsReady = true;
         updateStartButtonState();
       })
