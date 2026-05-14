@@ -9,7 +9,10 @@
       "rowset for level 0",
       "component buffer level 0",
       "rowset representing level 0",
-      "rowset object at level 0"
+      "rowset object at level 0",
+      "top of the component buffer",
+      "starting point for traversing the buffer",
+      "rowset with one row at the top of the buffer"
     ],
     "keywords": ["rowset", "rowset object", "level 0"],
     "explanation": "`GetLevel0()` returns a rowset object. Specifically for the Level 0 rowset — the top of the component buffer, which always contains exactly one row. \n\n It is the starting point for reaching any of the child scroll levels. Level 0 usually contains one (and only one) active row for the current transaction."
@@ -22,7 +25,10 @@
       "rowset is a collection of rows",
       "rowset contains rows",
       "a rowset holds multiple rows",
-      "a row is a single record in a rowset"
+      "a row is a single record in a rowset",
+      "rowset is a container of rows",
+      "a row can contain records and child rowsets",
+      "rowset is the container and row is one entry"
     ],
     "keywords": ["rowset", "row"],
     "explanation": "A rowset is a collection (container) of rows. \n\n A row is a single record within a rowset, and it can contain records and child rowsets. For example, `&rs2` is the entire Level 2 contact info rowset, while `&rs2(&j)` is one single contact row within that rowset."
@@ -35,7 +41,10 @@
       "value of a field in a record on a row",
       "the data stored in a specific field",
       "actual data in a field on the component buffer",
-      "the field value from a record on that row"
+      "the field value from a record on that row",
+      "navigates from row to record to field to value",
+      "reads or sets the field value in the buffer",
+      "drill from row to record to field to read or set value"
     ],
     "keywords": ["value", "field"],
     "explanation": "`Row.Record.Field.Value` navigates from a row object, to a specific record on that row, to a specific field on that record, and then reads or sets its value in the component buffer. \n\n For example, `&row2.CSU_JD_BG_CNTCT.CSU_JD_CONTACT_VAL.Value` reads the Contact Value field from the current Level 2 contact info row being processed."
@@ -51,7 +60,12 @@
       "the level 0 rowset always contains a single row",
       "there is only ever one row at level 0",
       "default method",
-      "get the first row"
+      "get the first row",
+      "component header row",
+      "shorthand for getrow",
+      "equivalent to getrow 1",
+      "rowsets are 1 based",
+      "only valid index at level 0"
     ],
     "keywords": ["one row", "shorthand", "shortcut", "default method"],
     "explanation": "Level 0 always contains exactly one row — the component header row. So `&rs0(1)` is the only valid index, and it gives you the single row from which you can call `GetRowset()` to reach Level 1. \n\n `&rs0(1)` is shorthand and functionally equivalent to `GetLevel0().GetRow(1)` because the default method of the Rowset class is `GetRow`, PeopleCode lets you omit the explicit method name. \n\n Rowsets are 1-based (not 0-based like most arrays), so &rs0(1) means \"get the first row.\" \n\n Assigning `GetLevel0()` to a variable like `&rs0` is also good practice — it creates a reusable reference to the Level 0 rowset for anywhere you need to traverse the component buffer."
@@ -65,7 +79,11 @@
       "how many active rows exist",
       "count of active rows",
       "the number of non-deleted rows in the rowset",
-      "how many active rows are currently loaded"
+      "how many active rows are currently loaded",
+      "non-deleted rows currently in the rowset",
+      "safe upper limit for a for loop",
+      "excludes rows marked for deletion",
+      "loop bound for active rows"
     ],
     "keywords": ["active", "rows", "buffer"],
     "explanation": "`ActiveRowCount` returns the number of active (non-deleted) rows currently in the rowset — it is the safe upper limit to use as the bound in a `For` loop and reflects what is currently loaded in the component buffer. (i.e. rows marked for deletion are excluded from the count.)"
@@ -80,7 +98,11 @@
       "you must go through level 1 first",
       "level 2 is not directly under level 0",
       "the scroll hierarchy requires going through level 1",
-      "we need to start at level 0 and traverse the buffer"
+      "we need to start at level 0 and traverse the buffer",
+      "buffer is a hierarchy",
+      "must traverse each level in order",
+      "level 2 belongs to a specific level 1 parent",
+      "level 2 data belongs to an effdt parent row"
     ],
     "keywords": ["level 1", "traverse"],
     "explanation": "Level 2 is a child of Level 1, not Level 0. The component buffer is a hierarchy — you must traverse each level in order. \n\n You get Level 1 from Level 0, then Level 2 from a Level 1 row. Level 2 rowset data belongs to a specific Level 1 (in our case, EFFDT'ed) parent row. \n\n The full path is: get the Level 0 row → get the Level 1 rowset → get a specific Level 1 row → only then retrieve its Level 2 child rowset to access rows, records, and fields within it."
@@ -94,7 +116,10 @@
       "a row object",
       "the row at index i",
       "returns a row at position i",
-      "row object at index i"
+      "row object at index i",
+      "row at position i in the rowset",
+      "the ith row of the rowset",
+      "1-based row reference"
     ],
     "keywords": ["row"],
     "explanation": "`&rs1(&i)` returns the Row object at position `i` within the rowset. \n\n You can then call methods like `GetRowset()` or `GetRecord()` on that row object. Because rowsets are 1-based, `&rs1(1)` returns the first Level 1 row, `&rs1(2)` returns the second, and so on. Once you have a row, you can retrieve its child rowsets or access records and fields on it."
@@ -107,7 +132,11 @@
       "each level 1 row has its own level 2 rowset",
       "different for each level 1 row",
       "level 2 rows belong to a specific level 1 row",
-      "each iteration has a different parent row"
+      "each iteration has a different parent row",
+      "child rowset of the current level 1 row",
+      "level 2 rowset belongs to the current parent row",
+      "buffer maintains an l2 rowset for each level 1 row",
+      "validates the contacts for the current parent row"
     ],
     "keywords": ["each", "level 1"],
     "explanation": "Each Level 1 row has its own child Level 2 rowset. By retrieving &rs2 inside the loop on each iteration, we always get the Level 2 contacts that belong specifically to &rs1(&i) — the current Level 1 row. \n\n The buffer maintains an L2 rowset for each Level 1 row even if no contact data exists in the database yet. Nesting the retrieval inside the loop ensures we validate only the contact rows belonging to the current header row being processed."
@@ -122,7 +151,11 @@
       "misses level 2 rows for other level 1 rows",
       "only retrieves contacts belonging to the first level 1 row",
       "each level 1 has a level 2 child rowset",
-      "parent-child relationship"
+      "parent-child relationship",
+      "would validate the same data on every iteration",
+      "rs2 would point to only one parent row",
+      "fails to validate child rows for each parent",
+      "stuck pointing at one parent row's contacts"
     ],
     "keywords": ["first", "only", "child", "parent", "loop"],
     "explanation": "If `&rs2` were retrieved once before the loop, it would be fixed to the Level 2 rowset of one specific Level 1 row (likely the first). All iterations of the L1 loop would then validate the same L2 contact data on every iteration, missing contact info detail on other Level 1 rows entirely. \n\n Doing this incorrectly assumes there is only one Level 2 rowset for the whole component. Since each EFFDT'ed Level 1 row has its own child Level 2 rowset (even when no L2 data may exist in the database yet), so a single pre-loop retrieval would either point to only one parent row's contacts or fail to validate the correct child rows for each Level 1 EFFDT'ed parent."
@@ -135,7 +168,11 @@
       "loop iterates over each one",
       "processes each level 1 row",
       "validation runs for each effdt row",
-      "the for loop runs once for each effdt row"
+      "the for loop runs once for each effdt row",
+      "for loop runs once per active level 1 row",
+      "loop runs once for every effdt",
+      "each effdt header row is processed independently",
+      "validation runs once per level 1 row"
     ],
     "keywords": ["each", "loop"],
     "explanation": "The For loop runs once per active Level 1 row. If there are three EFFDT rows, the loop runs three times — each time retrieving and validating the Level 2 contact data for that specific effective-dated row. \n\n Each EFFDT header row is processed independently: the code retrieves that row's Level 2 contact rowset and validates only those child rows before advancing to the next Level 1 row."
@@ -149,7 +186,11 @@
       "level 2 is retrieved from the parent row object",
       "calling getrowset on a specific level 1 row returns its children",
       "the row object knows its own child rowset",
-      "key structure"
+      "key structure",
+      "row object inherently knows its child rowsets",
+      "parent-child key relationships",
+      "buffer organizes child data under each parent row",
+      "component structure ties children to parent rows"
     ],
     "keywords": ["parent", "row"],
     "explanation": "`GetRowset()` is called on a specific Level 1 row object `&rs1(&i). \n\n The row object inherently knows its own child rowsets — so the result is always such that the Level 2 rows are children of that particular Level 1 row. \n\n The component buffer organizes child scroll data under each parent row based on the page/component structure and the record's parent-child key relationships. \n\n This means `&rs1(&i).GetRowset(...)` always returns the contacts info detail for that specific effective-dated parent row, not contacts info detail from any other Level 1 row."
@@ -162,7 +203,11 @@
       "resets for each level 1 row",
       "separate count per level 1 row",
       "starts at zero for each effdt row",
-      "each level 1 row gets its own fresh count"
+      "each level 1 row gets its own fresh count",
+      "prevents the count from bleeding into subsequent iterations",
+      "scoped to each level 1 iteration",
+      "prevents contacts from one header row corrupting the next",
+      "fresh zero at the start of each iteration"
     ],
     "keywords": ["reset", "each", "init", "initialize"],
     "explanation": "`&primaryCount` is reset to 0 at the start of each Level 1 iteration so the count is specific to that row's contacts. \n\n The validation runs after the Level 2 loop because we need to finish counting all contacts for that row before we can determine if there is more than one primary. Initializing inside the loop prevents the count from bleeding into subsequent iterations — if initialized outside the L1 loop, contacts from one header row would corrupt the primary count for the next. \n\n Placing the `&primaryCount > 1` check outside the inner loop ensures the full set of Level 2 contact rows for the current parent has been inspected before any error is thrown."
@@ -172,13 +217,18 @@
     "question": "Why is `SavePreChange` a reasonable PeopleCode event for our data validation, and what is the difference between what we're doing here (validating the data in the buffer) versus validating the database?",
     "instructions": "Answer in one or two sentences. This question is auto-graded by keyword matching.",
     "acceptedAnswers": [
-      "runs before data is saved to the database",
+      "before data is saved to the database",
       "fires before data is written to the database",
       "catches errors before committing to the database",
-      "validates before the database write occurs"
+      "validates before the database write occurs",
+      "fires after save click but before sql is written",
+      "validates the in-memory buffer state",
+      "checks the buffer before any sql is written",
+      "buffer validation covers unsaved changes",
+      "error can stop the save entirely"
     ],
-    "keywords": ["before", "save"],
-    "explanation": "The `SavePreChange` event fires after the user clicks \"Save\" but before any SQL is written to the database. \n\n Validating in the buffer means we're checking the component's in-memory state — it's faster and prevents a round-trip to the database, but the database could still be modified directly by other means (batch processing, SQL) that bypass this event. \n\n At this point in component save processing, the buffer is available for cross-row validation and raising an `Error()` can stop the save entirely, making it the right event for a final sweep across multiple rows or scroll levels. \n\n Buffer validation covers unsaved changes that haven't yet hit the database; database validation covers only what's already been persisted — so save processing should usually validate the buffer, since that is the data that is about to be committed to the db."
+    "keywords": ["before", "save", "buffer", "db", "database"],
+    "explanation": "The `SavePreChange` event fires after the user clicks \"Save\" but before any SQL is written to the database. \n\n Validating in the buffer means we're checking the component's in-memory state — it's faster and prevents a round-trip to the database, however ther is a chance that the database could still be modified directly by other means (batch processing, SQL, etc) that bypass this event. \n\n At this point in component save processing, the buffer is still available for cross-row validation or manipulation and raising an `Error()` can stop the save entirely, making it the right event for a final sweep across multiple rows or scroll levels. \n\n Buffer validation covers unsaved changes that haven't yet hit the database; database validation covers only what's already been persisted — so save processing should usually validate the buffer, since that is the data that is about to be committed to the db."
   },
   {
     "type": "shortAnswer",
@@ -188,7 +238,11 @@
       "immediate feedback to the user",
       "when you want real-time validation",
       "as the user enters data",
-      "when you want to catch the error before the user moves to the next field"
+      "when you want to catch the error before the user moves to the next field",
+      "real-time validation of a single field",
+      "tightly scoped to a single field",
+      "while the user is still on that field",
+      "validate a single field in real time"
     ],
     "keywords": ["immediate", "field", "field-level"],
     "explanation": "`FieldEdit` and `FieldChange` events fire as the user interacts with a specific field, giving immediate feedback before the user moves on. They're better when you want to validate a single field in real time rather than waiting until the user attempts to save the entire component. \n\n `SavePreChange` is better for a final, sweeping validation across multiple rows or scroll levels — use `FieldEdit` or `FieldChange` when the requirement is that validation is tightly scoped to a single field's value."
