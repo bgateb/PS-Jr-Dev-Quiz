@@ -9,7 +9,7 @@
       "An array of all rowsets in the component buffer, starting with Level 0, index 0",
       "A rowset object representing the Level 0 scroll — the top of the component buffer, which should always contain one row"
     ],
-    "correctIndex": 0,
+    "correctIndex": 3,
     "explanation": "`GetLevel0()` returns a rowset object. Specifically for the Level 0 rowset — the top of the component buffer, which always contains exactly one row. \n\n It is the starting point for reaching any of the child scroll levels. Level 0 usually contains one (and only one) active row for the current transaction."
   },
   {
@@ -22,7 +22,7 @@
       "A rowset is a collection of rows; a row is a single entry within a rowset",
       "A rowset is a single field's value across all scroll levels; a row is the set of fields at one scroll level"
     ],
-    "correctIndex": 0,
+    "correctIndex": 2,
     "explanation": "A rowset is a collection (container) of rows. \n\n A row is a single record within a rowset, and it can contain records and child rowsets. For example, `&rs2` is the entire Level 2 contact info rowset, while `&rs2(&j)` is one single contact row within that rowset."
   },
   {
@@ -72,7 +72,7 @@
       "The total number of rows in the rowset, including any rows that have been marked for deletion in the current session",
       "The number of rows that have been modified (changed, added, or deleted) since the component was loaded"
     ],
-    "correctIndex": 0,
+    "correctIndex": 1,
     "explanation": "`ActiveRowCount` returns the number of active (non-deleted) rows currently in the rowset — it is the safe upper limit to use as the bound in a `For` loop and reflects what is currently loaded in the component buffer. (i.e. rows marked for deletion are excluded from the count.)"
   },
   {
