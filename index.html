@@ -16,6 +16,8 @@
       --danger: #b91c1c;
       --border: #d1d5db;
       --soft: #eef2ff;
+      --code-bg: #111827;
+      --code-text: #e5e7eb;
     }
 
     * {
@@ -47,9 +49,16 @@
     }
 
     main {
-      max-width: 900px;
+      max-width: 1100px;
       margin: 2rem auto;
       padding: 0 1rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 1rem;
+      align-items: start;
     }
 
     .card {
@@ -58,6 +67,35 @@
       border-radius: 14px;
       padding: 1.5rem;
       box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .reference-card {
+      position: sticky;
+      top: 1rem;
+    }
+
+    .reference-card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+
+    .reference-note {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      white-space: pre;
+      font-size: 0.9rem;
+    }
+
+    code {
+      font-family: Consolas, Monaco, "Courier New", monospace;
     }
 
     .toolbar {
@@ -77,6 +115,11 @@
     .question-title {
       font-size: 1.25rem;
       margin: 0 0 1rem;
+    }
+
+    .question-instructions {
+      margin-top: -0.25rem;
+      color: var(--muted);
     }
 
     .answers {
@@ -120,6 +163,23 @@
       background: #fee2e2;
     }
 
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1rem;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
     .feedback {
       min-height: 2rem;
       margin: 1rem 0;
@@ -132,6 +192,11 @@
 
     .feedback.danger {
       color: var(--danger);
+    }
+
+    .feedback.neutral {
+      color: var(--text);
+      font-weight: 400;
     }
 
     .actions {
@@ -195,8 +260,22 @@
       background: #fafafa;
     }
 
+    .review-item p {
+      margin: 0.35rem 0;
+    }
+
     .hidden {
       display: none;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .reference-card {
+        position: static;
+      }
     }
   </style>
 </head>
@@ -207,21 +286,33 @@
   </header>
 
   <main>
-    <section id="quiz-card" class="card">
-      <div class="toolbar">
-        <div class="status" id="progress-text">Question 1 of 1</div>
-        <div class="status" id="score-text">Score: 0</div>
-      </div>
+    <div class="layout">
+      <section id="quiz-card" class="card">
+        <div class="toolbar">
+          <div class="status" id="progress-text">Question 1 of 1</div>
+          <div class="status" id="score-text">Auto-graded score: 0</div>
+        </div>
 
-      <h2 class="question-title" id="question-text"></h2>
-      <div class="answers" id="answers"></div>
-      <div class="feedback" id="feedback"></div>
+        <h2 class="question-title" id="question-text"></h2>
+        <p class="question-instructions" id="question-instructions"></p>
+        <div class="answers" id="answers"></div>
+        <div id="short-answer-container" class="hidden">
+          <textarea id="short-answer" placeholder="Type your answer here..."></textarea>
+        </div>
+        <div class="feedback" id="feedback"></div>
 
-      <div class="actions">
-        <button class="primary" id="submit-btn">Submit Answer</button>
-        <button class="secondary" id="next-btn" disabled>Next Question</button>
-      </div>
-    </section>
+        <div class="actions">
+          <button class="primary" id="submit-btn">Submit Answer</button>
+          <button class="secondary" id="next-btn" disabled>Next Question</button>
+        </div>
+      </section>
+
+      <aside class="card reference-card">
+        <h2>Reference</h2>
+        <p class="reference-note" id="reference-note">Code snippets shown here stay visible while you answer the related question.</p>
+        <div id="reference-content"></div>
+      </aside>
+    </div>
 
     <section id="result-card" class="card result hidden">
       <h2>Quiz Complete</h2>
@@ -235,9 +326,44 @@
   </main>
 
   <script>
+    const referenceSnippets = {
+      saveButtonPeopleCode: {
+        title: "Save Button PeopleCode",
+        language: "PeopleCode",
+        code: `Local string &emplid;
+
+&emplid = DERIVED_WRK.EMPLID.Value;
+
+If None(&emplid) Then
+   Error "Employee ID is required.";
+End-If;
+
+SQLExec("SELECT NAME FROM PS_PERSONAL_DATA WHERE EMPLID = :1", &emplid, &name);
+DERIVED_WRK.NAME.Value = &name;`
+      },
+      simpleSql: {
+        title: "Simple SQL Reference",
+        language: "SQL",
+        code: `SELECT A.EMPLID,
+       A.NAME,
+       B.DEPTID
+  FROM PS_PERSONAL_DATA A
+  JOIN PS_JOB B
+    ON B.EMPLID = A.EMPLID
+ WHERE B.EFFDT = (
+       SELECT MAX(B_ED.EFFDT)
+         FROM PS_JOB B_ED
+        WHERE B_ED.EMPLID = B.EMPLID
+          AND B_ED.EFFDT <= SYSDATE
+       );`
+      }
+    };
+
     const quizQuestions = [
       {
+        type: "multipleChoice",
         question: "What is the main purpose of version control?",
+        instructions: "Choose the best answer.",
         answers: [
           "To make code run faster",
           "To track and manage changes to files over time",
@@ -248,35 +374,47 @@
         explanation: "Version control helps teams track changes, collaborate safely, and recover previous versions when needed."
       },
       {
+        type: "shortAnswer",
+        question: "In the PeopleCode reference, what validation is being performed before the SQLExec runs?",
+        instructions: "Answer briefly. This question is auto-graded by keyword matching.",
+        referenceIds: ["saveButtonPeopleCode"],
+        acceptedAnswers: [
+          "employee id is required",
+          "emplid is required",
+          "checks emplid is not blank",
+          "validates emplid",
+          "checks employee id"
+        ],
+        keywords: ["emplid"],
+        explanation: "The code checks whether EMPLID is blank or missing before continuing."
+      },
+      {
+        type: "multipleChoice",
         question: "Which HTTP method is typically used to retrieve data?",
+        instructions: "Choose the best answer.",
         answers: ["GET", "POST", "PATCH", "DELETE"],
         correctIndex: 0,
         explanation: "GET is used to request or retrieve data from a server."
       },
       {
-        question: "What does a primary key do in a database table?",
-        answers: [
-          "Encrypts sensitive data",
-          "Uniquely identifies each row",
-          "Stores file attachments",
-          "Improves screen layout"
+        type: "shortAnswer",
+        question: "Looking at the SQL reference, what is the correlated subquery trying to find?",
+        instructions: "Answer in one or two sentences. This question is auto-graded by keyword matching.",
+        referenceIds: ["simpleSql"],
+        acceptedAnswers: [
+          "maximum effective date",
+          "max effdt",
+          "latest effective date",
+          "current effective dated row",
+          "most recent effdt"
         ],
-        correctIndex: 1,
-        explanation: "A primary key provides a unique identifier for each row in a table."
+        keywords: ["effdt"],
+        explanation: "The subquery finds the maximum effective date that is less than or equal to the current date."
       },
       {
-        question: "In PeopleCode-style thinking, why is null or blank validation important before processing data?",
-        answers: [
-          "It makes comments unnecessary",
-          "It prevents bad assumptions and runtime issues",
-          "It removes the need for testing",
-          "It automatically improves SQL performance"
-        ],
-        correctIndex: 1,
-        explanation: "Validation helps avoid incorrect processing, unexpected errors, and poor data quality."
-      },
-      {
+        type: "multipleChoice",
         question: "What is the best first step when debugging an issue?",
+        instructions: "Choose the best answer.",
         answers: [
           "Rewrite the entire module",
           "Make multiple fixes at once",
@@ -299,7 +437,10 @@
     const progressText = document.getElementById("progress-text");
     const scoreText = document.getElementById("score-text");
     const questionText = document.getElementById("question-text");
+    const questionInstructions = document.getElementById("question-instructions");
     const answersContainer = document.getElementById("answers");
+    const shortAnswerContainer = document.getElementById("short-answer-container");
+    const shortAnswer = document.getElementById("short-answer");
     const feedback = document.getElementById("feedback");
     const submitButton = document.getElementById("submit-btn");
     const nextButton = document.getElementById("next-btn");
@@ -307,6 +448,15 @@
     const finalScore = document.getElementById("final-score");
     const finalMessage = document.getElementById("final-message");
     const reviewList = document.getElementById("review-list");
+    const referenceContent = document.getElementById("reference-content");
+
+    function normalizeText(value) {
+      return value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
 
     function renderQuestion() {
       const currentQuestion = quizQuestions[currentQuestionIndex];
@@ -314,15 +464,30 @@
       submitted = false;
 
       progressText.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
-      scoreText.textContent = `Score: ${score}`;
+      scoreText.textContent = `Auto-graded score: ${score}`;
       questionText.textContent = currentQuestion.question;
+      questionInstructions.textContent = currentQuestion.instructions || "";
       feedback.textContent = "";
       feedback.className = "feedback";
       answersContainer.innerHTML = "";
+      shortAnswer.value = "";
       submitButton.disabled = false;
       nextButton.disabled = true;
       nextButton.textContent = currentQuestionIndex === quizQuestions.length - 1 ? "View Results" : "Next Question";
 
+      renderReferences(currentQuestion.referenceIds || []);
+
+      if (currentQuestion.type === "multipleChoice") {
+        answersContainer.classList.remove("hidden");
+        shortAnswerContainer.classList.add("hidden");
+        renderMultipleChoiceAnswers(currentQuestion);
+      } else if (currentQuestion.type === "shortAnswer") {
+        answersContainer.classList.add("hidden");
+        shortAnswerContainer.classList.remove("hidden");
+      }
+    }
+
+    function renderMultipleChoiceAnswers(currentQuestion) {
       currentQuestion.answers.forEach((answer, index) => {
         const button = document.createElement("button");
         button.className = "answer";
@@ -331,6 +496,37 @@
         button.addEventListener("click", () => selectAnswer(index));
         answersContainer.appendChild(button);
       });
+    }
+
+    function renderReferences(referenceIds) {
+      referenceContent.innerHTML = "";
+
+      if (referenceIds.length === 0) {
+        referenceContent.innerHTML = `<p class="reference-note">No reference snippet is needed for this question.</p>`;
+        return;
+      }
+
+      referenceIds.forEach((id) => {
+        const snippet = referenceSnippets[id];
+        if (!snippet) return;
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = `
+          <h3>${snippet.title}</h3>
+          <p class="reference-note">${snippet.language}</p>
+          <pre><code>${escapeHtml(snippet.code)}</code></pre>
+        `;
+        referenceContent.appendChild(wrapper);
+      });
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     function selectAnswer(index) {
@@ -345,13 +541,22 @@
     }
 
     function submitAnswer() {
+      const currentQuestion = quizQuestions[currentQuestionIndex];
+
+      if (currentQuestion.type === "multipleChoice") {
+        submitMultipleChoice(currentQuestion);
+      } else if (currentQuestion.type === "shortAnswer") {
+        submitShortAnswer(currentQuestion);
+      }
+    }
+
+    function submitMultipleChoice(currentQuestion) {
       if (selectedAnswerIndex === null) {
         feedback.textContent = "Please select an answer before submitting.";
         feedback.className = "feedback danger";
         return;
       }
 
-      const currentQuestion = quizQuestions[currentQuestionIndex];
       const isCorrect = selectedAnswerIndex === currentQuestion.correctIndex;
       const answerButtons = document.querySelectorAll(".answer");
 
@@ -360,13 +565,8 @@
       nextButton.disabled = false;
 
       answerButtons.forEach((button, index) => {
-        if (index === currentQuestion.correctIndex) {
-          button.classList.add("correct");
-        }
-
-        if (index === selectedAnswerIndex && !isCorrect) {
-          button.classList.add("incorrect");
-        }
+        if (index === currentQuestion.correctIndex) button.classList.add("correct");
+        if (index === selectedAnswerIndex && !isCorrect) button.classList.add("incorrect");
       });
 
       if (isCorrect) {
@@ -378,9 +578,10 @@
         feedback.className = "feedback danger";
       }
 
-      scoreText.textContent = `Score: ${score}`;
+      scoreText.textContent = `Auto-graded score: ${score}`;
 
       review.push({
+        type: currentQuestion.type,
         question: currentQuestion.question,
         selectedAnswer: currentQuestion.answers[selectedAnswerIndex],
         correctAnswer: currentQuestion.answers[currentQuestion.correctIndex],
@@ -389,7 +590,52 @@
       });
     }
 
+    function submitShortAnswer(currentQuestion) {
+      const userAnswer = shortAnswer.value.trim();
+
+      if (!userAnswer) {
+        feedback.textContent = "Please enter a response before submitting.";
+        feedback.className = "feedback danger";
+        return;
+      }
+
+      const normalizedAnswer = normalizeText(userAnswer);
+      const acceptedAnswers = (currentQuestion.acceptedAnswers || []).map(normalizeText);
+      const requiredKeywords = (currentQuestion.keywords || []).map(normalizeText);
+
+      const matchesAcceptedAnswer = acceptedAnswers.some((acceptedAnswer) => normalizedAnswer.includes(acceptedAnswer));
+      const includesRequiredKeywords = requiredKeywords.every((keyword) => normalizedAnswer.includes(keyword));
+      const isCorrect = matchesAcceptedAnswer || includesRequiredKeywords;
+
+      submitted = true;
+      submitButton.disabled = true;
+      nextButton.disabled = false;
+      shortAnswer.disabled = true;
+
+      if (isCorrect) {
+        score += 1;
+        feedback.textContent = `Accepted. ${currentQuestion.explanation}`;
+        feedback.className = "feedback success";
+      } else {
+        feedback.textContent = `Needs review. ${currentQuestion.explanation}`;
+        feedback.className = "feedback neutral";
+      }
+
+      scoreText.textContent = `Auto-graded score: ${score}`;
+
+      review.push({
+        type: currentQuestion.type,
+        question: currentQuestion.question,
+        selectedAnswer: userAnswer,
+        correctAnswer: currentQuestion.acceptedAnswers ? currentQuestion.acceptedAnswers.join("; ") : "Instructor review recommended",
+        isCorrect,
+        explanation: currentQuestion.explanation
+      });
+    }
+
     function goToNextQuestion() {
+      shortAnswer.disabled = false;
+
       if (currentQuestionIndex < quizQuestions.length - 1) {
         currentQuestionIndex += 1;
         renderQuestion();
@@ -400,18 +646,12 @@
 
     function renderResults() {
       quizCard.classList.add("hidden");
+      document.querySelector(".reference-card").classList.add("hidden");
       resultCard.classList.remove("hidden");
 
       const percentage = Math.round((score / quizQuestions.length) * 100);
       finalScore.textContent = `${score} / ${quizQuestions.length} (${percentage}%)`;
-
-      if (percentage >= 80) {
-        finalMessage.textContent = "Strong result. Ready for the next level of practice.";
-      } else if (percentage >= 60) {
-        finalMessage.textContent = "Good start. Review the missed items and try again.";
-      } else {
-        finalMessage.textContent = "Keep practicing. Focus on the explanations before retaking the quiz.";
-      }
+      finalMessage.textContent = "Short-answer questions are auto-checked with simple matching. Review responses manually when precision matters.";
 
       reviewList.innerHTML = "";
 
@@ -419,11 +659,11 @@
         const reviewItem = document.createElement("div");
         reviewItem.className = "review-item";
         reviewItem.innerHTML = `
-          <strong>${index + 1}. ${item.question}</strong>
-          <p>Your answer: ${item.selectedAnswer}</p>
-          <p>Correct answer: ${item.correctAnswer}</p>
-          <p>${item.isCorrect ? "Correct" : "Incorrect"}</p>
-          <p>${item.explanation}</p>
+          <strong>${index + 1}. ${escapeHtml(item.question)}</strong>
+          <p><strong>Response:</strong> ${escapeHtml(item.selectedAnswer)}</p>
+          <p><strong>Expected:</strong> ${escapeHtml(item.correctAnswer)}</p>
+          <p><strong>Status:</strong> ${item.isCorrect ? "Accepted" : "Needs review"}</p>
+          <p>${escapeHtml(item.explanation)}</p>
         `;
         reviewList.appendChild(reviewItem);
       });
@@ -435,7 +675,9 @@
       score = 0;
       submitted = false;
       review.length = 0;
+      shortAnswer.disabled = false;
       resultCard.classList.add("hidden");
+      document.querySelector(".reference-card").classList.remove("hidden");
       quizCard.classList.remove("hidden");
       renderQuestion();
     }
