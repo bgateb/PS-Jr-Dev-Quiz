@@ -8,46 +8,83 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <style>
     :root {
-      --bg: #f5f7fb;
+      --bg: #f6f8fc;
+      --bg-tint: #eef2ff;
       --panel: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
+      --panel-soft: #fafbfc;
+      --text: #0f172a;
+      --text-soft: #334155;
+      --muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-soft: #eef2ff;
+      --accent: #7c3aed;
       --success: #15803d;
+      --success-soft: #dcfce7;
+      --success-border: #bbf7d0;
       --danger: #b91c1c;
-      --border: #d1d5db;
-      --soft: #eef2ff;
-      --code-bg: #111827;
-      --code-text: #e5e7eb;
+      --danger-soft: #fee2e2;
+      --danger-border: #fecaca;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --code-bg: #0b1220;
+      --code-text: #e2e8f0;
+
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.05), 0 6px 16px rgba(15, 23, 42, 0.04);
+      --shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.18);
+
+      --radius-md: 10px;
+      --radius-xl: 18px;
+
+      --transition-fast: 120ms ease;
+      --transition-base: 180ms ease;
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, "Helvetica Neue", Arial, sans-serif;
       background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 60% 50% at 20% 0%, rgba(79, 70, 229, 0.09), transparent 60%),
+        radial-gradient(ellipse 50% 50% at 100% 100%, rgba(124, 58, 237, 0.07), transparent 60%);
+      background-attachment: fixed;
       color: var(--text);
-      line-height: 1.5;
+      line-height: 1.55;
+      min-height: 100vh;
     }
 
     header {
-      background: var(--panel);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
       border-bottom: 1px solid var(--border);
-      padding: 1.25rem;
+      padding: 1.1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     header h1 {
       margin: 0;
-      font-size: 1.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
     }
 
     header p {
-      margin: 0.35rem 0 0;
+      margin: 0.3rem 0 0;
       color: var(--muted);
+      font-size: 0.95rem;
     }
 
     main {
@@ -66,21 +103,33 @@
     .card {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1.5rem;
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-md);
     }
 
     .reference-card h2 {
-      margin-top: 0;
-      font-size: 1.1rem;
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+    }
+
+    .reference-card h3 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 1.25rem 0 0.5rem;
     }
 
     .reference-card img {
       width: 100%;
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       display: block;
       margin-bottom: 1rem;
+      border: 1px solid var(--border);
     }
 
     .reference-card pre {
@@ -94,50 +143,79 @@
 
     .reference-note {
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.92rem;
     }
 
     pre {
       background: var(--code-bg);
       color: var(--code-text);
-      padding: 1rem;
-      border-radius: 10px;
+      padding: 1rem 1.15rem;
+      border-radius: var(--radius-md);
       overflow-x: auto;
       white-space: pre;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      line-height: 1.55;
     }
 
     code {
-      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-family: "SF Mono", "JetBrains Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.9em;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-tint);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 999px;
+      transition: width 320ms ease;
     }
 
     .toolbar {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 0.75rem;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
     .status {
+      color: var(--text-soft);
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      letter-spacing: 0.005em;
+    }
+
+    .question-title {
+      font-size: 1.3rem;
+      margin: 0 0 0.5rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.35;
+    }
+
+    .question-instructions {
+      margin: 0 0 1rem;
       color: var(--muted);
       font-size: 0.95rem;
     }
 
-    .question-title {
-      font-size: 1.25rem;
-      margin: 0 0 1rem;
-    }
-
-    .question-instructions {
-      margin-top: -0.25rem;
-      color: var(--muted);
-    }
-
     .answers {
       display: grid;
-      gap: 0.75rem;
+      gap: 0.65rem;
       margin: 1rem 0;
     }
 
@@ -147,84 +225,118 @@
       border: 1px solid var(--border);
       background: #ffffff;
       color: var(--text);
-      border-radius: 10px;
+      border-radius: var(--radius-md);
       padding: 0.85rem 1rem;
       cursor: pointer;
       font-size: 1rem;
+      transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
 
     .answer:hover,
     .answer:focus {
       border-color: var(--primary);
       outline: none;
-      background: var(--soft);
+      background: var(--primary-soft);
     }
 
     .answer.selected {
       border-color: var(--primary);
-      background: var(--soft);
-      font-weight: 700;
+      background: var(--primary-soft);
+      font-weight: 600;
+      box-shadow: var(--shadow-focus);
     }
 
     .answer.correct {
       border-color: var(--success);
-      background: #dcfce7;
+      background: var(--success-soft);
     }
 
     .answer.incorrect {
       border-color: var(--danger);
-      background: #fee2e2;
+      background: var(--danger-soft);
     }
 
     textarea,
     input[type="text"] {
       width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.85rem 1rem;
-      font-family: Arial, Helvetica, sans-serif;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 0.8rem 1rem;
+      font-family: inherit;
       font-size: 1rem;
+      color: var(--text);
+      background: #ffffff;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
 
     textarea {
       min-height: 140px;
       resize: vertical;
+      line-height: 1.55;
     }
 
     textarea:focus,
     input[type="text"]:focus {
       border-color: var(--primary);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      box-shadow: var(--shadow-focus);
+    }
+
+    textarea::placeholder,
+    input[type="text"]::placeholder {
+      color: #94a3b8;
+    }
+
+    .start-card h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
     }
 
     .start-card label {
       display: block;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .feedback {
-      min-height: 2rem;
       margin: 1rem 0;
       font-weight: 700;
+      border-radius: var(--radius-md);
+      transition: background var(--transition-base);
+    }
+
+    .feedback:not(:empty) {
+      padding: 0.85rem 1rem;
+      border: 1px solid transparent;
     }
 
     .feedback.success {
       color: var(--success);
+      background: var(--success-soft);
+      border-color: var(--success-border);
     }
 
     .feedback.danger {
       color: var(--danger);
+      background: var(--danger-soft);
+      border-color: var(--danger-border);
     }
 
     .feedback.neutral {
       color: var(--text);
       font-weight: 400;
+      background: var(--bg);
+      border-color: var(--border);
     }
 
     .explanation {
-      margin-top: 0.75rem;
+      margin-top: 0.65rem;
       font-weight: 400;
       color: var(--text);
       white-space: pre-line;
@@ -232,10 +344,10 @@
 
     .explanation-label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       color: var(--muted);
       margin-bottom: 0.25rem;
     }
@@ -243,32 +355,53 @@
     .actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 1rem;
+      gap: 0.65rem;
+      margin-top: 1.25rem;
     }
 
     button.primary,
     button.secondary {
       border: 0;
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      padding: 0.7rem 1.15rem;
       cursor: pointer;
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.005em;
+      transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     }
 
     button.primary {
       background: var(--primary);
       color: #ffffff;
+      box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.14);
     }
 
-    button.primary:hover {
-      background: var(--primary-dark);
+    button.primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    }
+
+    button.primary:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.14);
     }
 
     button.secondary {
-      background: #e5e7eb;
+      background: #ffffff;
       color: var(--text);
+      border: 1px solid var(--border-strong);
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-soft);
+    }
+
+    button:focus-visible {
+      outline: none;
+      box-shadow: var(--shadow-focus);
     }
 
     button:disabled {
@@ -280,25 +413,38 @@
       text-align: center;
     }
 
+    .result h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
     .score {
-      font-size: 2.5rem;
-      font-weight: 800;
       color: var(--primary);
-      margin: 0.5rem 0;
+      font-size: 3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0.25rem 0 0.5rem;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
     }
 
     .review-list {
       margin-top: 1.5rem;
       text-align: left;
       display: grid;
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
     .review-item {
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem;
-      background: #fafafa;
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
+      background: var(--panel-soft);
     }
 
     .review-item p {
@@ -311,12 +457,45 @@
 
     .submit-note {
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.92rem;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #start-card,
+    #quiz-layout > .card,
+    #result-card {
+      animation: fadeInUp 280ms ease both;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 0.9rem 1rem;
+      }
+      header h1 {
+        font-size: 1.2rem;
+      }
+      main {
+        margin: 1rem auto;
+      }
+      .card {
+        padding: 1.25rem;
+      }
+      .question-title {
+        font-size: 1.15rem;
+      }
+      .score {
+        font-size: 2.5rem;
+      }
     }
 
     @media print {
       body {
         background: #ffffff;
+        background-image: none;
       }
       header,
       #start-card,
@@ -332,6 +511,7 @@
         border: none;
         box-shadow: none;
         padding: 0;
+        animation: none;
       }
       .review-item {
         page-break-inside: avoid;
@@ -366,6 +546,7 @@
       </aside>
 
       <section id="quiz-card" class="card">
+        <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
         <div class="toolbar">
           <div class="status" id="progress-text">Question 1 of 1</div>
           <div class="status" id="score-text">Auto-graded score: 0</div>
@@ -502,6 +683,7 @@ End-For;`
     const startButton = document.getElementById("start-btn");
     const downloadJsonButton = document.getElementById("download-json-btn");
     const printPdfButton = document.getElementById("print-pdf-btn");
+    const progressFill = document.getElementById("progress-fill");
 
     function renderFeedback(statusLabel, explanation, className) {
       feedback.className = `feedback ${className}`;
@@ -523,6 +705,7 @@ End-For;`
 
       progressText.textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
       scoreText.textContent = `Auto-graded score: ${score}`;
+      progressFill.style.width = `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`;
       questionText.textContent = currentQuestion.question;
       questionInstructions.textContent = currentQuestion.instructions || "";
       feedback.textContent = "";
@@ -762,6 +945,7 @@ End-For;`
       studentName = "";
       shortAnswer.disabled = false;
       studentNameInput.value = "";
+      progressFill.style.width = "0%";
       updateStartButtonState();
       resultCard.classList.add("hidden");
       quizLayout.classList.add("hidden");

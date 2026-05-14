@@ -105,7 +105,7 @@
       "each iteration has a different parent row"
     ],
     "keywords": ["each", "level 1"],
-    "explanation": "Each Level 1 row has its own child Level 2 rowset. By retrieving &rs2 inside the loop on each iteration, we always get the Level 2 contacts that belong specifically to &rs1(&i) — the current Level 1 row. The buffer maintains an L2 rowset for each Level 1 row even if no contact data exists in the database yet. Nesting the retrieval inside the loop ensures we validate only the contact rows belonging to the current header row being processed."
+    "explanation": "Each Level 1 row has its own child Level 2 rowset. By retrieving &rs2 inside the loop on each iteration, we always get the Level 2 contacts that belong specifically to &rs1(&i) — the current Level 1 row. \n\n The buffer maintains an L2 rowset for each Level 1 row even if no contact data exists in the database yet. Nesting the retrieval inside the loop ensures we validate only the contact rows belonging to the current header row being processed."
   },
   {
     "type": "shortAnswer",
@@ -118,7 +118,7 @@
       "only retrieves contacts belonging to the first level 1 row"
     ],
     "keywords": ["first", "only"],
-    "explanation": "If &rs2 were retrieved once before the loop, it would be fixed to the Level 2 rowset of one specific Level 1 row (likely the first). All iterations of the loop would validate the same contact data, missing contacts on other Level 1 rows entirely. \n\n Doing this incorrectly assumes there is only one Level 2 rowset for the whole component. Since each Level 1 row has its own child Level 2 rowset (even when no L2 data exists in the database yet), a single pre-loop retrieval would either point to only one parent row's contacts or fail to validate the correct child rows for each Level 1 parent."
+    "explanation": "If &rs2 were retrieved once before the loop, it would be fixed to the Level 2 rowset of one specific Level 1 row (likely the first). All iterations of the loop would validate the same contact data, missing contacts on other Level 1 rows entirely. \n\n Doing this incorrectly assumes there is only one Level 2 rowset for the whole component. Since each EFFDT'ed Level 1 row has its own child Level 2 rowset (even when no L2 data may exist in the database yet), a single pre-loop retrieval would either point to only one parent row's contacts or fail to validate the correct child rows for each Level 1 EFFDT'ed parent."
   },
   {
     "type": "shortAnswer",
