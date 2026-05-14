@@ -176,21 +176,32 @@
       background: #fee2e2;
     }
 
-    textarea {
+    textarea,
+    input[type="text"] {
       width: 100%;
-      min-height: 140px;
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 0.85rem 1rem;
       font-family: Arial, Helvetica, sans-serif;
       font-size: 1rem;
+    }
+
+    textarea {
+      min-height: 140px;
       resize: vertical;
     }
 
-    textarea:focus {
+    textarea:focus,
+    input[type="text"]:focus {
       border-color: var(--primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .start-card label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
     }
 
     .feedback {
@@ -290,7 +301,17 @@
   </header>
 
   <main>
-    <div class="layout">
+    <section id="start-card" class="card start-card">
+      <h2>Before you begin</h2>
+      <p>Enter your name to start the quiz. Your name will appear on your results.</p>
+      <label for="student-name">Your name</label>
+      <input type="text" id="student-name" autocomplete="name" placeholder="First and last name" />
+      <div class="actions">
+        <button class="primary" id="start-btn" disabled>Start Quiz</button>
+      </div>
+    </section>
+
+    <div class="layout hidden" id="quiz-layout">
       <aside class="card reference-card">
         <h2>Reference</h2>
         <p class="reference-note" id="reference-note">Code snippets shown here stay visible while you answer the related question.</p>
@@ -399,6 +420,8 @@ End-For;`
     };
 
     let quizQuestions = [];
+    let questionsReady = false;
+    let studentName = "";
 
     let currentQuestionIndex = 0;
     let selectedAnswerIndex = null;
@@ -423,6 +446,10 @@ End-For;`
     const finalMessage = document.getElementById("final-message");
     const reviewList = document.getElementById("review-list");
     const referenceContent = document.getElementById("reference-content");
+    const startCard = document.getElementById("start-card");
+    const quizLayout = document.getElementById("quiz-layout");
+    const studentNameInput = document.getElementById("student-name");
+    const startButton = document.getElementById("start-btn");
 
     function normalizeText(value) {
       return value
@@ -612,7 +639,7 @@ End-For;`
 
       const percentage = Math.round((score / quizQuestions.length) * 100);
       finalScore.textContent = `${score} / ${quizQuestions.length} (${percentage}%)`;
-      finalMessage.textContent = "Short-answer questions are auto-checked with simple matching. Review responses manually when precision matters.";
+      finalMessage.innerHTML = `Results for <strong>${escapeHtml(studentName)}</strong>. Short-answer questions are auto-checked with simple matching. Review responses manually when precision matters.`;
 
       reviewList.innerHTML = "";
 
@@ -636,26 +663,51 @@ End-For;`
       score = 0;
       submitted = false;
       review.length = 0;
+      studentName = "";
       shortAnswer.disabled = false;
+      studentNameInput.value = "";
+      updateStartButtonState();
       resultCard.classList.add("hidden");
-      document.querySelector(".reference-card").classList.remove("hidden");
-      quizCard.classList.remove("hidden");
+      quizLayout.classList.add("hidden");
+      startCard.classList.remove("hidden");
+      studentNameInput.focus();
+    }
+
+    function updateStartButtonState() {
+      startButton.disabled = !questionsReady || studentNameInput.value.trim().length === 0;
+    }
+
+    function startQuiz() {
+      const name = studentNameInput.value.trim();
+      if (!name || !questionsReady) return;
+      studentName = name;
+      startCard.classList.add("hidden");
+      quizLayout.classList.remove("hidden");
+      renderReferences();
       renderQuestion();
     }
 
     submitButton.addEventListener("click", submitAnswer);
     nextButton.addEventListener("click", goToNextQuestion);
     restartButton.addEventListener("click", restartQuiz);
+    startButton.addEventListener("click", startQuiz);
+    studentNameInput.addEventListener("input", updateStartButtonState);
+    studentNameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        startQuiz();
+      }
+    });
 
     fetch('questions.json')
       .then(r => r.json())
       .then(questions => {
         quizQuestions = questions;
-        renderReferences();
-        renderQuestion();
+        questionsReady = true;
+        updateStartButtonState();
       })
       .catch(() => {
-        document.getElementById('quiz-card').innerHTML = '<p style="color:var(--danger);padding:1rem">Failed to load questions. Please reload the page.</p>';
+        startCard.innerHTML = '<p style="color:var(--danger);padding:1rem">Failed to load questions. Please reload the page.</p>';
       });
   </script>
 </body>
