@@ -18,10 +18,10 @@
       --text: #1a0a0d;
       --text-soft: #4a2030;
       --muted: #7a5060;
-      --primary: #8b1c32;
-      --primary-hover: #6f1528;
-      --primary-soft: #fef2f4;
-      --accent: #b5183a;
+      --primary: #520d1c;
+      --primary-hover: #3c0913;
+      --primary-soft: #fdf0f2;
+      --accent: #7a1226;
       --success: #16803d;
       --success-soft: #f0fdf4;
       --success-border: #bbf7d0;
@@ -35,7 +35,7 @@
 
       --shadow-sm: 0 1px 2px rgba(26, 10, 13, 0.05);
       --shadow-md: 0 1px 3px rgba(26, 10, 13, 0.06), 0 8px 24px rgba(26, 10, 13, 0.07);
-      --shadow-focus: 0 0 0 3px rgba(139, 28, 50, 0.2);
+      --shadow-focus: 0 0 0 3px rgba(82, 13, 28, 0.22);
 
       --radius-md: 10px;
       --radius-xl: 16px;
@@ -59,8 +59,8 @@
       font-feature-settings: "cv02", "cv03", "cv04", "cv11";
       background: var(--bg);
       background-image:
-        radial-gradient(ellipse 60% 50% at 20% 0%, rgba(139, 28, 50, 0.07), transparent 60%),
-        radial-gradient(ellipse 50% 50% at 100% 100%, rgba(181, 24, 58, 0.05), transparent 60%);
+        radial-gradient(ellipse 60% 50% at 20% 0%, rgba(82, 13, 28, 0.08), transparent 60%),
+        radial-gradient(ellipse 50% 50% at 100% 100%, rgba(122, 18, 38, 0.06), transparent 60%);
       background-attachment: fixed;
       color: var(--text);
       line-height: 1.55;
@@ -155,11 +155,67 @@
     }
 
     .reference-card pre {
-      max-height: 420px;
+      max-height: 680px;
       overflow-y: auto;
       overflow-x: auto;
       scrollbar-width: thin;
-      scrollbar-color: #3d4f6e var(--code-bg);
+      scrollbar-color: #6b3040 var(--code-bg);
+    }
+
+    .reference-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .reference-header h2 {
+      margin: 0;
+    }
+
+    .btn-collapse {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+      line-height: 1;
+    }
+
+    .btn-collapse:hover {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-collapse svg {
+      transition: transform 240ms ease;
+    }
+
+    .reference-card.collapsed .btn-collapse svg {
+      transform: rotate(-180deg);
+    }
+
+    #reference-body {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 260ms ease;
+      overflow: hidden;
+    }
+
+    .reference-card.collapsed #reference-body {
+      grid-template-rows: 0fr;
+    }
+
+    #reference-body-inner {
+      min-height: 0;
     }
 
     .hljs {
@@ -657,9 +713,21 @@
 
     <div class="layout hidden" id="quiz-layout">
       <aside class="card reference-card">
-        <h2>Reference</h2>
-        <p class="reference-note" id="reference-note">Use the PeopleCode and screenshot of the component pictured below to answer the following questions.</p>
-        <div id="reference-content"></div>
+        <div class="reference-header">
+          <h2>Reference</h2>
+          <button class="btn-collapse" id="reference-toggle" aria-expanded="true" aria-controls="reference-body">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M2 4.5L6 8L10 4.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="reference-toggle-label">Hide</span>
+          </button>
+        </div>
+        <div id="reference-body">
+          <div id="reference-body-inner">
+            <p class="reference-note" id="reference-note">Use the PeopleCode and screenshot of the component pictured below to answer the following questions.</p>
+            <div id="reference-content"></div>
+          </div>
+        </div>
       </aside>
 
       <section id="quiz-card" class="card">
@@ -1097,6 +1165,13 @@ End-For;`
         e.preventDefault();
         startQuiz();
       }
+    });
+
+    document.getElementById("reference-toggle").addEventListener("click", function () {
+      const card = document.querySelector(".reference-card");
+      const isCollapsed = card.classList.toggle("collapsed");
+      this.setAttribute("aria-expanded", String(!isCollapsed));
+      document.getElementById("reference-toggle-label").textContent = isCollapsed ? "Show" : "Hide";
     });
 
     fetch('questions.json')
