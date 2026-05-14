@@ -223,6 +223,22 @@
       font-weight: 400;
     }
 
+    .explanation {
+      margin-top: 0.75rem;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .explanation-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -332,7 +348,7 @@
 
   <main>
     <section id="start-card" class="card start-card">
-      <h2>Before you begin</h2>
+      <h2>Before you begin...</h2>
       <p>Enter your name to start the quiz. Your name will appear on your results.</p>
       <label for="student-name">Your name</label>
       <input type="text" id="student-name" autocomplete="name" placeholder="First and last name" />
@@ -344,7 +360,7 @@
     <div class="layout hidden" id="quiz-layout">
       <aside class="card reference-card">
         <h2>Reference</h2>
-        <p class="reference-note" id="reference-note">Code snippets shown here stay visible while you answer the related question.</p>
+        <p class="reference-note" id="reference-note">Use the PeopleCode and screenshot of the component pictured below to answer the following questions.</p>
         <div id="reference-content"></div>
       </aside>
 
@@ -373,7 +389,7 @@
       <h2>Quiz Complete</h2>
       <p class="score" id="final-score"></p>
       <p id="final-message"></p>
-      <p class="submit-note no-print">Download or print your results below and email them to your instructor.</p>
+      <p class="submit-note no-print">Download or print your results below and email them to Kristy.</p>
       <div class="actions no-print" style="justify-content: center;">
         <button class="secondary" id="download-json-btn">Download JSON</button>
         <button class="secondary" id="print-pdf-btn">Print / Save as PDF</button>
@@ -486,6 +502,11 @@ End-For;`
     const downloadJsonButton = document.getElementById("download-json-btn");
     const printPdfButton = document.getElementById("print-pdf-btn");
 
+    function renderFeedback(statusLabel, explanation, className) {
+      feedback.className = `feedback ${className}`;
+      feedback.innerHTML = `${escapeHtml(statusLabel)}<div class="explanation"><span class="explanation-label">Explanation</span>${escapeHtml(explanation)}</div>`;
+    }
+
     function normalizeText(value) {
       return value
         .toLowerCase()
@@ -594,11 +615,9 @@ End-For;`
 
       if (isCorrect) {
         score += 1;
-        feedback.textContent = `Correct. ${currentQuestion.explanation}`;
-        feedback.className = "feedback success";
+        renderFeedback("Correct.", currentQuestion.explanation, "success");
       } else {
-        feedback.textContent = `Incorrect. ${currentQuestion.explanation}`;
-        feedback.className = "feedback danger";
+        renderFeedback("Incorrect.", currentQuestion.explanation, "danger");
       }
 
       scoreText.textContent = `Auto-graded score: ${score}`;
@@ -637,11 +656,9 @@ End-For;`
 
       if (isCorrect) {
         score += 1;
-        feedback.textContent = `Accepted. ${currentQuestion.explanation}`;
-        feedback.className = "feedback success";
+        renderFeedback("Accepted.", currentQuestion.explanation, "success");
       } else {
-        feedback.textContent = `Needs review. ${currentQuestion.explanation}`;
-        feedback.className = "feedback neutral";
+        renderFeedback("Needs review.", currentQuestion.explanation, "neutral");
       }
 
       scoreText.textContent = `Auto-graded score: ${score}`;
@@ -674,7 +691,7 @@ End-For;`
 
       const percentage = Math.round((score / quizQuestions.length) * 100);
       finalScore.textContent = `${score} / ${quizQuestions.length} (${percentage}%)`;
-      finalMessage.innerHTML = `Results for <strong>${escapeHtml(studentName)}</strong>. Short-answer questions are auto-checked with simple matching. Review responses manually when precision matters.`;
+      finalMessage.innerHTML = `Results for <strong>${escapeHtml(studentName)}</strong>. Short-answer questions are auto-checked with simple matching.`;
 
       reviewList.innerHTML = "";
 
@@ -686,7 +703,7 @@ End-For;`
           <p><strong>Response:</strong> ${escapeHtml(item.selectedAnswer)}</p>
           <p><strong>Expected:</strong> ${escapeHtml(item.correctAnswer)}</p>
           <p><strong>Status:</strong> ${item.isCorrect ? "Accepted" : "Needs review"}</p>
-          <p>${escapeHtml(item.explanation)}</p>
+          <div class="explanation"><span class="explanation-label">Explanation</span>${escapeHtml(item.explanation)}</div>
         `;
         reviewList.appendChild(reviewItem);
       });
