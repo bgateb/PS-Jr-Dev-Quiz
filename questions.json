@@ -11,7 +11,7 @@
       "rowset representing level 0"
     ],
     "keywords": ["rowset"],
-    "explanation": "GetLevel0() returns the Level 0 rowset — the top of the component buffer, which always contains exactly one row. It is the starting point for reaching any of the child scrolls. Level 0 usually contains one (and only one) active row for the current transaction."
+    "explanation": "GetLevel0() returns a rowset object for the Level 0 rowset — the top of the component buffer, which always contains exactly one row. \n\n It is the starting point for reaching any of the child scrolls. Level 0 usually contains one (and only one) active row for the current transaction."
   },
   {
     "type": "shortAnswer",
@@ -24,7 +24,7 @@
       "a row is a single record in a rowset"
     ],
     "keywords": ["rowset", "row"],
-    "explanation": "A rowset is a collection (container) of rows. A row is a single record within that rowset, and it can contain records and child rowsets. For example, &rs2 is the entire Level 2 contact data rowset, while &rs2(&j) is one single contact row within that rowset."
+    "explanation": "A rowset is a collection (container) of rows. \n\n A row is a single record within that rowset, and it can contain records and child rowsets. For example, &rs2 is the entire Level 2 contact data rowset, while &rs2(&j) is one single contact row within that rowset."
   },
   {
     "type": "shortAnswer",
@@ -51,7 +51,7 @@
       "there is only ever one row at level 0"
     ],
     "keywords": ["one row"],
-    "explanation": "Level 0 always contains exactly one row — the component header row. So &rs0(1) is the only valid index, and it gives you the single row from which you can call GetRowset() to reach Level 1. &rs0(1) is shorthand and functionally equivalent to GetLevel0().GetRow(1) — because the default method of the Rowset class is GetRow, PeopleCode lets you omit the explicit method name. Rowsets are 1-based (not 0-based like most arrays), so &rs0(1) means \"get the first row.\" Assigning GetLevel0() to a variable like &rs0 is also good practice — it creates a reusable reference to the Level 0 rowset for anywhere you need to traverse the component buffer."
+    "explanation": "Level 0 always contains exactly one row — the component header row. \n\n So &rs0(1) is the only valid index, and it gives you the single row from which you can call GetRowset() to reach Level 1. &rs0(1) is shorthand and functionally equivalent to GetLevel0().GetRow(1) because the default method of the Rowset class is GetRow, PeopleCode lets you omit the explicit method name. \n\n Rowsets are 1-based (not 0-based like most arrays), so &rs0(1) means \"get the first row.\" \n\n Assigning GetLevel0() to a variable like &rs0 is also good practice — it creates a reusable reference to the Level 0 rowset for anywhere you need to traverse the component buffer."
   },
   {
     "type": "shortAnswer",
