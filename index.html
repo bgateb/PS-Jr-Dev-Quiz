@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Junior Developer Quiz</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <style>
     :root {
       --bg: #f5f7fb;
@@ -82,8 +84,12 @@
     }
 
     .reference-card pre {
-      max-height: 320px;
+      max-height: 500px;
       overflow-y: auto;
+    }
+
+    .hljs {
+      background: transparent;
     }
 
     .reference-note {
@@ -657,8 +663,9 @@ acceptedAnswers: [
         <img src="img/component-screenshot.png" alt="CSU Training Contact Info component showing Level 0, Level 1 Scroll, and Level 2 Scroll" />
         <h3>${snippet.title}</h3>
         <p class="reference-note">${snippet.language}</p>
-        <pre><code>${escapeHtml(snippet.code)}</code></pre>
+        <pre><code class="language-java">${escapeHtml(snippet.code)}</code></pre>
       `;
+      hljs.highlightElement(referenceContent.querySelector('code'));
     }
 
     function escapeHtml(value) {
@@ -816,7 +823,7 @@ acceptedAnswers: [
       score = 0;
       submitted = false;
       review.length = 0;
-      shortAnswer.disabled = fals
+      shortAnswer.disabled = false;
       resultCard.classList.add("hidden");
       document.querySelector(".reference-card").classList.remove("hidden");
       quizCard.classList.remove("hidden");
