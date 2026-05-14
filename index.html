@@ -292,6 +292,36 @@
       display: none;
     }
 
+    .submit-note {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+      header,
+      #start-card,
+      #quiz-layout,
+      .no-print {
+        display: none !important;
+      }
+      main {
+        margin: 0;
+        padding: 0;
+      }
+      .card {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+      .review-item {
+        page-break-inside: avoid;
+        background: #ffffff;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -343,7 +373,10 @@
       <h2>Quiz Complete</h2>
       <p class="score" id="final-score"></p>
       <p id="final-message"></p>
-      <div class="actions" style="justify-content: center;">
+      <p class="submit-note no-print">Download or print your results below and email them to your instructor.</p>
+      <div class="actions no-print" style="justify-content: center;">
+        <button class="secondary" id="download-json-btn">Download JSON</button>
+        <button class="secondary" id="print-pdf-btn">Print / Save as PDF</button>
         <button class="primary" id="restart-btn">Restart Quiz</button>
       </div>
       <div class="review-list" id="review-list"></div>
@@ -450,6 +483,8 @@ End-For;`
     const quizLayout = document.getElementById("quiz-layout");
     const studentNameInput = document.getElementById("student-name");
     const startButton = document.getElementById("start-btn");
+    const downloadJsonButton = document.getElementById("download-json-btn");
+    const printPdfButton = document.getElementById("print-pdf-btn");
 
     function normalizeText(value) {
       return value
@@ -657,6 +692,49 @@ End-For;`
       });
     }
 
+    function buildResultsPayload() {
+      const total = quizQuestions.length;
+      return {
+        studentName,
+        submittedAt: new Date().toISOString(),
+        score,
+        total,
+        percentage: total > 0 ? Math.round((score / total) * 100) : 0,
+        review: review.map((item) => ({
+          question: item.question,
+          response: item.selectedAnswer,
+          expected: item.correctAnswer,
+          status: item.isCorrect ? "Accepted" : "Needs review"
+        }))
+      };
+    }
+
+    function sanitizeForFilename(value) {
+      return (value || "student")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        || "student";
+    }
+
+    function downloadResultsJson() {
+      const payload = buildResultsPayload();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const datePart = new Date().toISOString().slice(0, 10);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `quiz-results-${sanitizeForFilename(studentName)}-${datePart}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function printResults() {
+      window.print();
+    }
+
     function restartQuiz() {
       currentQuestionIndex = 0;
       selectedAnswerIndex = null;
@@ -691,6 +769,8 @@ End-For;`
     nextButton.addEventListener("click", goToNextQuestion);
     restartButton.addEventListener("click", restartQuiz);
     startButton.addEventListener("click", startQuiz);
+    downloadJsonButton.addEventListener("click", downloadResultsJson);
+    printPdfButton.addEventListener("click", printResults);
     studentNameInput.addEventListener("input", updateStartButtonState);
     studentNameInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
